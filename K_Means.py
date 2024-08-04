@@ -113,3 +113,4 @@ def recalculateCentroid(cluster, pointSize, dataPoints):
         cluster.centroid = dataPoints[randomIndex]
 
         
+#final
