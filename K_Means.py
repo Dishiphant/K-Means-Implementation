@@ -48,20 +48,39 @@ def initializeClusters(dataPoints, k):
 
 def kMeansLoop(dataPoints, k, clusterList):
     converge = False
-    while converge is False:
+    iters = 0
+    while converge is False and iters < 2000000:
+        for cluster in clusterList:
+            cluster.clusterPoints = []
         for point in dataPoints:
             assignCluster(point, clusterList)
         oldCentroids = []
         for cluster in clusterList:
             oldCentroids.append(cluster.centroid)
-            recalculateCentroid(cluster, len(dataPoints[0]))
-        for i in range(oldCentroids):
+            recalculateCentroid(cluster, len(dataPoints[0]), dataPoints)
+
+        print(f"Iteration {iters}:")
+        for i, cluster in enumerate(clusterList):
+            print(f"Cluster {i} - Centroid: {cluster.centroid}, Number of Points: {len(cluster.clusterPoints)}")
+
+        for i in range(len(oldCentroids)):
             converge = True
-            if(oldCentroids[i].centroid == clusterList[i].centroid):
+            for j in range(len(clusterList[i].centroid)):
+                if math.isclose(oldCentroids[i][j], clusterList[i].centroid[j], rel_tol=1e-9):
+                    None
+                else:
+                    converge = False
+                    break
+                    
+
+            if(math.isclose(oldCentroids[i][j], clusterList[i].centroid[j], rel_tol=1e-9) for j in range(len(clusterList[i].centroid))):
                 None
             else:
                 converge = False
                 break
+        
+        iters += 1
+        
             
 
 
@@ -69,9 +88,9 @@ def assignCluster(point, clusterList):
     minDistCluster = 0
     minDist = float('inf')
     eucliDistance = 0
-    for j in range(clusterList):
+    for j in range(len(clusterList)):
         for i in range(len(point)):
-            eucliDistance += (point[i] - clusterList[j].centroid[i])^2
+            eucliDistance += (point[i] - clusterList[j].centroid[i]) ** 2
         eucliDistance = math.sqrt(eucliDistance)
         if eucliDistance < minDist:
             minDist = eucliDistance
@@ -80,12 +99,17 @@ def assignCluster(point, clusterList):
 
         
     
-def recalculateCentroid(cluster, pointSize):
+def recalculateCentroid(cluster, pointSize, dataPoints):
     meanVector = [0] * pointSize
-    for point in cluster.clusterPoints:
-        for i in range(len(point)):
-            meanVector[i] += point[i]
-    
-    meanVector = meanVector / len(cluster.clusterPoints)
-    cluster.centroid = meanVector
+    if (len(cluster.clusterPoints) > 0):
+        for point in cluster.clusterPoints:
+            for i in range(len(point)):
+                meanVector[i] += point[i]
+        for i in range(len(meanVector)):
+            meanVector[i] = meanVector[i] / len(cluster.clusterPoints)
+        cluster.centroid = meanVector
+    else:
+        randomIndex = random.randint(0, len(dataPoints)-1)
+        cluster.centroid = dataPoints[randomIndex]
+
         
